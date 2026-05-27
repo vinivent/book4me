@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npx -y @nestjs/cli@latest new api --package-manager npm --skip-git --strict)",
+      "Bash(npx -y create-next-app@latest web --typescript --tailwind --app --eslint --no-src-dir --import-alias \"@/*\" --use-npm --no-turbopack --yes)",
+      "Bash(npm install *)",
+      "Bash(npx -y shadcn@latest init --base-color zinc --yes)",
+      "Bash(npx -y shadcn@latest init --help)",
+      "Bash(npx -y shadcn@latest init -d --no-monorepo --no-pointer)",
+      "Bash(node *)",
+      "Bash(npx -y shadcn@latest add card input label dialog badge sonner select separator skeleton)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"Sim, siga com a implementacao.\" npx prisma migrate reset --force)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"Sim, siga com a implementacao.\" npx prisma migrate dev --name auth_and_users)",
+      "Bash(npx -y shadcn@latest add sidebar calendar popover select)"
+    ]
+  }
+}

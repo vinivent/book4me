@@ -1,0 +1,100 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  DONO
+  CLIENTE
+
+  @@map("user_role")
+}
+
+model User {
+  id              String     @id @default(cuid())
+  nome            String
+  email           String     @unique
+  telefone        String
+  passwordHash    String     @map("password_hash")
+  role            UserRole   @default(CLIENTE)
+  createdAt       DateTime   @default(now()) @map("created_at")
+  ownedBusinesses Business[] @relation("BusinessOwner")
+  bookings        Booking[]
+
+  @@map("users")
+}
+
+model Business {
+  id        String    @id @default(cuid())
+  nome      String
+  tipo      String
+  ownerId   String    @map("owner_id")
+  owner     User      @relation("BusinessOwner", fields: [ownerId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  services  Service[]
+  slots     Slot[]
+
+  @@index([ownerId])
+  @@map("businesses")
+}
+
+model Service {
+  id         String    @id @default(cuid())
+  businessId String    @map("business_id")
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  nome       String
+  duracaoMin Int       @map("duracao_min")
+  preco      Decimal   @db.Decimal(10, 2)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  bookings   Booking[]
+
+  @@index([businessId])
+  @@map("services")
+}
+
+model Slot {
+  id         String    @id @default(cuid())
+  businessId String    @map("business_id")
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  inicio     DateTime
+  fim        DateTime
+  disponivel Boolean   @default(true)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  bookings   Booking[]
+
+  @@index([businessId, inicio])
+  @@index([disponivel])
+  @@map("slots")
+}
+
+enum BookingStatus {
+  CONFIRMADO
+  CANCELADO
+
+  @@map("booking_status")
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  slotId          String        @map("slot_id")
+  slot            Slot          @relation(fields: [slotId], references: [id])
+  serviceId       String        @map("service_id")
+  service         Service       @relation(fields: [serviceId], references: [id])
+  userId          String?       @map("user_id")
+  user            User?         @relation(fields: [userId], references: [id])
+  clienteNome     String        @map("cliente_nome")
+  clienteTelefone String        @map("cliente_telefone")
+  clienteEmail    String        @map("cliente_email")
+  status          BookingStatus @default(CONFIRMADO)
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@index([slotId])
+  @@index([serviceId])
+  @@index([userId])
+  @@map("bookings")
+}
