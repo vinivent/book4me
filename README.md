@@ -1,50 +1,103 @@
-# book4me — kit de partida
+# Lâmina
 
-Este é o ponto de partida do vídeo "construindo um app completo com Claude Code".
-Não tem código de aplicação aqui — o app inteiro (frontend, backend e banco) nasce
-ao vivo, construído pelo Claude Code. O que este repo te dá é o **contexto** que faz
-o Claude já começar alinhado com a ideia.
+Um repositório de aprendizado.
 
-## O que é o book4me
-Um app de agendamento genérico, pra qualquer negócio de horário marcado: barbearia,
-salão, manicure, quadra de futebol, consultório. O dono cadastra serviços e horários;
-o cliente marca. E o app nunca deixa duas pessoas reservarem o mesmo horário.
+Aqui dentro tem um app de agendamento de barbearia inteiro: frontend, backend, banco, autenticação, design system. O nome fictício do negócio é **Lâmina**. O nome da pasta raiz é `book4me` por motivo histórico (era como o app se chamava antes de ganhar identidade).
 
-## O que tem neste repo
-- `CLAUDE.md` — a visão do produto + a stack + as regras. O Claude Code lê isso
-  automaticamente e já começa "sabendo" o que vamos construir e por quê.
-- Este README com o passo a passo.
-- (opcional) `skills/` — habilidades extras que o Claude pode usar.
+A ideia não é vender o produto. É mostrar **o que dá pra construir em menos de duas horas** usando Claude Code. Eu não escrevi uma única linha de código: descrevi o que queria, revisei o resultado, dei feedback visual e segui pro próximo passo. Tudo que está aqui dentro foi escrito pelo Claude.
 
-## Pré-requisitos
-- Node 18+
-- PostgreSQL rodando local (este projeto usa o banco `book4me`)
-- Claude Code instalado
+## O que tem dentro
 
-## Antes de começar
-1. Crie o banco no seu Postgres:  `CREATE DATABASE book4me;`
-2. Confirme que o usuário/senha batem com o `.env` que o Claude vai gerar
-   (padrão do vídeo: postgres / postgres).
-3. Abra o Claude Code nesta pasta — ele vai ler o `CLAUDE.md` sozinho.
+O app está funcionando ponta a ponta:
 
-## Como seguir (a ordem dos prompts)
-O vídeo lança um prompt por etapa. A ideia é o Claude conduzir a construção; você
-orquestra e narra. A sequência:
+* Landing institucional com hero, seções editoriais e footer.
+* Autenticação JWT com dois papéis (dono e cliente), e reserva também como visitante.
+* Painel do dono pra cadastrar serviços e gerar horários.
+* Fluxo do cliente: escolher serviço, escolher horário, confirmar.
+* Regra de banco que impede dois clientes de reservarem o mesmo horário.
+* Tela "minhas reservas" com cancelamento.
+* Design system editorial em Tailwind v4 com tokens próprios.
 
-1. **Apresentar a ideia e o papel dele** (prompt de abertura — veja abaixo)
-2. Backend: projeto Nest + Prisma + Postgres + schema + migration + seed
-3. Endpoints REST (services, slots, bookings — com a regra de conflito 409)
-4. Frontend: Next + shadcn + Axios + TanStack Query
-5. Painel do dono → fluxo do cliente → minhas reservas
-6. Acabamento premium (tema)
+## Stack
 
-### Prompt de abertura 
-> Você vai me ajudar a construir um produto do zero, ao vivo. Leia o CLAUDE.md deste
-> repositório — ele tem a visão do produto, a stack e as regras. Em poucas linhas, me
-> diga: o que entendeu que vamos construir, por que a regra de não permitir reserva
-> dupla é tão importante, e qual o seu plano de construção em etapas. Depois disso,
-> vamos começar pela primeira etapa do backend.
+| Camada | Escolha |
+|---|---|
+| Linguagem | TypeScript |
+| Backend | NestJS 11, Prisma 7, PostgreSQL |
+| Auth | `@nestjs/jwt` + `passport-jwt` + `bcryptjs` |
+| Frontend | Next.js 16 (App Router), React 19, Tailwind v4 |
+| UI | shadcn/ui (preset base-nova) |
+| Dados (client) | TanStack Query + Axios |
+| Fontes | Instrument Serif (display), Geist Sans (body), Geist Mono (números) |
 
-Esse primeiro prompt faz o Claude "assumir" a visão em voz alta — ótimo momento de
-vídeo, porque ele resume a ideia pra sua audiência melhor do que um slide faria.
-EOF
+## Como rodar localmente
+
+Você precisa de:
+
+* Node 20 ou superior
+* PostgreSQL rodando localmente
+* `npm` (vem com o Node)
+
+### 1. Banco
+
+Crie um banco chamado `book4me`. Por padrão a API se conecta como `postgres / postgres` na porta `5432`. Se sua configuração for diferente, ajuste a `DATABASE_URL` em `apps/api/.env`.
+
+```sql
+CREATE DATABASE book4me;
+```
+
+### 2. Backend
+
+```bash
+cd apps/api
+npm install
+npx prisma migrate dev
+npm run db:seed
+npm run start:dev
+```
+
+A API sobe em `http://localhost:3333`. O `db:seed` cria a barbearia Lâmina, dois serviços, alguns slots e dois usuários de exemplo:
+
+* **Dono**: `dono@book4me.dev` / `dono123`
+* **Cliente**: `cliente@book4me.dev` / `cliente123`
+
+### 3. Frontend
+
+Em outro terminal:
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+A web sobe em `http://localhost:3000`. Abra no navegador, navegue como visitante, logue como cliente pra ver "Minhas reservas", logue como dono pra ver o painel.
+
+## O `CLAUDE.md`
+
+O arquivo `CLAUDE.md` na raiz é o contexto que o Claude Code lê automaticamente. Ele descreve a visão do produto, a stack, regras de design e código. A ideia é não precisar repetir essas coisas a cada conversa.
+
+Se você quer estudar como organizar contexto pra um agente, esse arquivo é exemplo. Tem três tipos de coisa nele:
+
+1. Decisões de produto e estética (o que estamos construindo e por quê).
+2. Restrições técnicas (qual stack, quais bibliotecas, padrões a seguir).
+3. Preferências de processo (mostrar plano antes de gerar muito código, trabalhar em incrementos visíveis).
+
+Quando o Claude precisa decidir algo no meio do caminho, em vez de chutar ele consulta o `CLAUDE.md`. O resultado é menos retrabalho e mais coerência ao longo da conversa.
+
+## O que esse repositório NÃO é
+
+Pra evitar confusão: isso aqui não é um produto pronto pra produção. Faltam coisas que um app de verdade precisaria, e que ficaram fora de escopo de propósito porque o foco era ensino, não shipping. Exemplos:
+
+* Pagamentos
+* Notificações por email ou SMS
+* Multi-tenant real (cada barbearia com seu subdomínio, etc)
+* Fuso horário e recorrência
+* Testes automatizados de qualquer tipo
+* Deploy
+
+Se você quiser usar como ponto de partida pra algo real, sem problemas, mas saiba que vai precisar resolver essas pontas.
+
+## Histórico
+
+O repositório foi construído ao vivo, em um vídeo, como demonstração do que dá pra fazer com Claude Code em uma sessão de programação focada. Se você está vindo do vídeo, o histórico do Git acompanha as etapas. Se caiu aqui sem ver o vídeo, sem problema: o código está bem comentado nos pontos que mais valem atenção.
